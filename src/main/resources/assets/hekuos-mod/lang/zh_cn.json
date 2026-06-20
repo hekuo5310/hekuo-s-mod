@@ -1,0 +1,37 @@
+{
+  "mod.hekuos-mod.name": "Hekuo's Mod",
+  "mod.hekuos-mod.description": "多功能Fabric模组 - 下界放水、AI对话、群服互联等",
+
+  "feature.hekuos-mod.fire_protection_water_bucket": "铁砧火焰保护水桶",
+  "feature.hekuos-mod.fix_shepherd_house": "修复牧羊人小屋",
+  "feature.hekuos-mod.nether_ice_to_frosted": "下界冰变霜冰",
+  "feature.hekuos-mod.ai_chat": "AI对话功能",
+  "feature.hekuos-mod.onebot": "OneBot群服互联",
+  "feature.hekuos-mod.end_rod_interaction": "末地烛交互",
+  "feature.hekuos-mod.web_status": "服务器状态网页",
+
+  "command.hekuos-mod.askai": "与AI对话",
+  "command.hekuos-mod.searchconversion": "查看AI对话历史",
+  "command.hekuos-mod.reload": "重载模组配置",
+  "command.hekuos-mod.status": "查看模组状态",
+
+  "message.hekuos-mod.ai_thinking": "正在思考中...",
+  "message.hekuos-mod.ai_no_thinking": "本服未开启模型思考功能喵喵喵~",
+  "message.hekuos-mod.ai_conversation_id": "会话ID: %s",
+  "message.hekuos-mod.ai_response": "AI回复: %s",
+  "message.hekuos-mod.ai_error": "AI调用失败: %s",
+  "message.hekuos-mod.ai_not_enabled": "AI功能未启用",
+
+  "message.hekuos-mod.end_rod_broadcast": "%s使用末地烛c了%s！",
+  "message.hekuos-mod.end_rod_milk_name": "你真的要喝掉它吗awa？",
+  "message.hekuos-mod.end_rod_milk_lore": "来自%s的\"牛奶\"",
+  "message.hekuos-mod.end_rod_milk_obtain": "你获得了一桶特殊的\"牛奶\"...",
+  "message.hekuos-mod.end_rod_milk_drink": "%s喝掉了%s的\"牛奶！\"",
+  "message.hekuos-mod.end_rod_fake_player": "你是真饿了连假人都不放过",
+  "message.hekuos-mod.end_rod_death": "你在一个游戏日内被末地烛右键了太多次...",
+
+  "message.hekuos-mod.config_reloaded": "Hekuo's Mod 配置已重载",
+  "message.hekuos-mod.status_header": "=== Hekuo's Mod 状态 ===",
+
+  "item.hekuos-mod.special_milk_bucket": "你真的要喝掉它吗awa？"
+}

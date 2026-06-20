@@ -1,0 +1,187 @@
+name: Build Hekuo's Mod
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: 17
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  # ===========================================================================
+  # Job 1: 编译Java模组
+  # ===========================================================================
+  build-mod:
+    name: Build Fabric Mod
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Mod
+        run: ./gradlew build
+
+      - name: Upload Mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: hekuos-mod-jar
+          path: build/libs/*.jar
+          retention-days: 30
+
+  # ===========================================================================
+  # Job 2: Nuitka编译前端服务器（多平台）
+  # ===========================================================================
+  build-web-linux:
+    name: Build Web Server (Linux x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          allow-prereleases: true
+
+      - name: Install Nuitka & dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka ordered-set zstandard
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc
+
+      - name: Build with Nuitka
+        run: |
+          mkdir -p dist
+          python -m nuitka \
+            --standalone \
+            --onefile \
+            --output-filename=hekuos-mod-web \
+            --output-dir=dist \
+            --python-flag=no_site \
+            --assume-yes-for-downloads \
+            --remove-output \
+            --follow-imports \
+            python/status_server.py
+
+      - name: Test binary
+        run: |
+          chmod +x dist/hekuos-mod-web
+          # 测试二进制能否启动（启动后3秒杀掉）
+          timeout 3 ./dist/hekuos-mod-web 8099 . || true
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: hekuos-mod-web-linux-x86_64
+          path: dist/hekuos-mod-web
+          retention-days: 30
+
+  build-web-windows:
+    name: Build Web Server (Windows x64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          allow-prereleases: true
+
+      - name: Install Nuitka
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka ordered-set zstandard
+
+      - name: Build with Nuitka
+        run: |
+          mkdir dist -Force
+          python -m nuitka --standalone --onefile --output-filename=hekuos-mod-web.exe --output-dir=dist --python-flag=no_site --assume-yes-for-downloads --remove-output --follow-imports --msvc=latest python/status_server.py
+
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: hekuos-mod-web-windows-x64
+          path: dist/hekuos-mod-web.exe
+          retention-days: 30
+
+  build-web-macos:
+    name: Build Web Server (macOS ARM64)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          allow-prereleases: true
+
+      - name: Install Nuitka
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka ordered-set zstandard
+
+      - name: Build with Nuitka
+        run: |
+          mkdir -p dist
+          python -m nuitka --standalone --onefile --output-filename=hekuos-mod-web --output-dir=dist --python-flag=no_site --assume-yes-for-downloads --remove-output --follow-imports python/status_server.py
+
+      - name: Upload macOS binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: hekuos-mod-web-macos-arm64
+          path: dist/hekuos-mod-web
+          retention-days: 30
+
+  # ===========================================================================
+  # Job 3: 发布 Release
+  # ===========================================================================
+  release:
+    name: Create Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-mod, build-web-linux, build-web-windows, build-web-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/hekuos-mod-jar/*.jar
+            artifacts/hekuos-mod-web-linux-x86_64/hekuos-mod-web
+            artifacts/hekuos-mod-web-windows-x64/hekuos-mod-web.exe
+            artifacts/hekuos-mod-web-macos-arm64/hekuos-mod-web
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

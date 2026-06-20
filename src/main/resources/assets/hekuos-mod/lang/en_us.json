@@ -1,0 +1,19 @@
+{
+  "mod.hekuos-mod.name": "Hekuo's Mod",
+  "mod.hekuos-mod.description": "Versatile Fabric Mod - Nether water, AI chat, OneBot integration, and more",
+
+  "feature.hekuos-mod.fire_protection_water_bucket": "Fire Protection Water Bucket",
+  "feature.hekuos-mod.fix_shepherd_house": "Fix Shepherd House",
+  "feature.hekuos-mod.nether_ice_to_frosted": "Nether Ice to Frosted Ice",
+  "feature.hekuos-mod.ai_chat": "AI Chat",
+  "feature.hekuos-mod.onebot": "OneBot Integration",
+  "feature.hekuos-mod.end_rod_interaction": "End Rod Interaction",
+  "feature.hekuos-mod.web_status": "Server Status Web Page",
+
+  "command.hekuos-mod.askai": "Chat with AI",
+  "command.hekuos-mod.searchconversion": "View AI conversation history",
+  "command.hekuos-mod.reload": "Reload mod config",
+  "command.hekuos-mod.status": "View mod status",
+
+  "item.hekuos-mod.special_milk_bucket": "Do you really want to drink it?"
+}

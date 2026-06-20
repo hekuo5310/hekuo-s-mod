@@ -1,0 +1,26 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.hekuo.mod.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "hekuos-mod-refmap.json",
+  "mixins": [
+    "AnvilScreenHandlerMixin",
+    "BucketItemMixin",
+    "IceBlockMixin",
+    "ShepherdHouseMixin",
+    "PlayerEntityMixin",
+    "MilkBucketItemMixin"
+  ],
+  "server": [
+    "server.MinecraftServerMixin",
+    "server.ServerPlayNetworkHandlerMixin",
+    "server.PlayerManagerMixin"
+  ],
+  "client": [
+    "client.HandledScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

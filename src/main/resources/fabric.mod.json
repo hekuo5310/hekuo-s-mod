@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "hekuos-mod",
+  "version": "${version}",
+  "name": "Hekuo's Mod",
+  "description": "多功能Fabric模组 - 下界放水、AI对话、群服互联、末地烛交互、服务器状态网页",
+  "authors": ["Hekuo"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/hekuos-mod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.hekuo.mod.HekuosMod"],
+    "client": ["com.hekuo.mod.HekuosModClient"],
+    "server": ["com.hekuo.mod.HekuosModServer"]
+  },
+  "mixins": [
+    "hekuos-mod.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
