@@ -1,2 +1,6 @@
-# Auto detect text files and perform LF normalization
+# Normalize line endings so the wrapper works on all platforms
 * text=auto
+
+# gradlew must keep LF line endings for Linux/macOS CI
+gradlew text eol=lf
+gradlew.bat text eol=crlf
