@@ -34,16 +34,20 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     /**
      * 拦截玩家交互事件 - 检测末地烛右键玩家
+     * 1.21.1: PlayerEntity.interact(Entity, Hand) 第一参数为 Entity（继承自 Entity 基类）
+     * this = 被右键的玩家(B)；参数 target 是发起者(A)，需为 PlayerEntity 才处理
      */
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+    private void onInteract(Entity target, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!ModConfig.get().endRodInteractionEnabled) return;
         if (this.getWorld().isClient()) return;
 
-        PlayerEntity self = (PlayerEntity) (Object) this;
-        PlayerEntity other = player;
+        // 仅处理玩家发起者
+        if (!(target instanceof PlayerEntity other)) return;
 
-        // 检查手持物品是否是末地烛
+        PlayerEntity self = (PlayerEntity) (Object) this;
+
+        // 检查发起者手持物品是否是末地烛
         ItemStack heldItem = other.getStackInHand(hand);
         if (heldItem.getItem() != Items.END_ROD) return;
 
