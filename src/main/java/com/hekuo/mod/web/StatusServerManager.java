@@ -574,7 +574,9 @@ if __name__ == '__main__':
                 if (i > 0) json.append(",");
                 json.append("{");
                 json.append("\"name\":\"").append(escapeJson(p.getName().getString())).append("\",");
-                json.append("\"ping\":").append(p.networkHandler != null ? p.networkHandler.latency : 0);
+                // 1.21.1: ServerCommonNetworkHandler.latency 是 private，无法直接访问
+                // 此处输出 -1 占位；如需真实 ping 可用 Mixin Accessor 暴露
+                json.append("\"ping\":").append(-1);
                 json.append("}");
             }
             json.append("]}");
