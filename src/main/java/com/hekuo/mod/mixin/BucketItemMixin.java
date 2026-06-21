@@ -5,6 +5,7 @@ import com.hekuo.mod.config.ModConfig;
 import com.hekuo.mod.tracker.WaterEvaporationTracker;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,6 +20,9 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import java.util.Optional;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -46,8 +50,11 @@ public class BucketItemMixin {
         // 检查是否在下界
         if (!world.getRegistryKey().equals(World.NETHER)) return;
 
-        // 检查水桶是否附魔了火焰保护
-        int fireProtectionLevel = EnchantmentHelper.getLevel(Enchantments.FIRE_PROTECTION, stack);
+        // 检查水桶是否附魔了火焰保护 (1.21.1: 附魔为 RegistryEntry<Enchantment>)
+        Optional<RegistryEntry.Reference<Enchantment>> fireProtOpt =
+            Registries.ENCHANTMENT.getEntry(Enchantments.FIRE_PROTECTION);
+        if (fireProtOpt.isEmpty()) return;
+        int fireProtectionLevel = EnchantmentHelper.getLevel(fireProtOpt.get(), stack);
         if (fireProtectionLevel <= 0) return;
 
         // 获取玩家看向的位置

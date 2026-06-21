@@ -15,6 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Formatting;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,7 +38,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!ModConfig.get().endRodInteractionEnabled) return;
-        if (this.world.isClient()) return;
+        if (this.getWorld().isClient()) return;
 
         PlayerEntity self = (PlayerEntity) (Object) this;
         PlayerEntity other = player;
@@ -73,8 +74,11 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
         if (handled) {
             // 消耗末地烛耐久（如果是创造模式不消耗）
+            // 1.21.1: ItemStack.damage(int, LivingEntity, EquipmentSlot)
             if (!other.getAbilities().creativeMode) {
-                heldItem.damage(1, other, p -> p.sendToolBreakStatus(hand));
+                EquipmentSlot slot = hand == Hand.MAIN_HAND
+                    ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+                heldItem.damage(1, other, slot);
             }
             cir.setReturnValue(ActionResult.SUCCESS);
         }

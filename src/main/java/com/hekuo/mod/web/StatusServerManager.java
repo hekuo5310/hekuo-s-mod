@@ -574,7 +574,7 @@ if __name__ == '__main__':
                 if (i > 0) json.append(",");
                 json.append("{");
                 json.append("\"name\":\"").append(escapeJson(p.getName().getString())).append("\",");
-                json.append("\"ping\":").append(p.pingMilliseconds);
+                json.append("\"ping\":").append(p.networkHandler != null ? p.networkHandler.latency : 0);
                 json.append("}");
             }
             json.append("]}");

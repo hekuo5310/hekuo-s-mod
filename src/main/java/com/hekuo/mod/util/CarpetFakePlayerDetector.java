@@ -35,10 +35,10 @@ public class CarpetFakePlayerDetector {
         // Carpet假人通过FakePlayerManager创建
         // 它们的网络连接与真实玩家不同
         try {
-            // 假人的网络Handler类型不同
+            // 1.21.1: ServerPlayNetworkHandler#connection 为公开字段 ClientConnection
             var connection = player.networkHandler;
-            if (connection != null) {
-                var channel = connection.getConnection().getChannel();
+            if (connection != null && connection.connection != null) {
+                var channel = connection.connection.channel;
                 if (channel == null || !channel.isActive()) {
                     // 没有活跃网络连接的"玩家"很可能是假人
                     return true;
@@ -50,15 +50,8 @@ public class CarpetFakePlayerDetector {
         }
 
         // 方法4: 检查延迟为0的特殊情况
-        try {
-            // Carpet假人的延迟总是0
-            var playerListEntry = player.networkHandler;
-            if (playerListEntry != null) {
-                int latency = player.pingMilliseconds;
-                // 如果延迟为0且不是单人游戏，很可能是假人
-                // 但需要谨慎，因为局域网玩家可能也是0
-            }
-        } catch (Exception ignored) {}
+        // 1.21.1: 服务端延迟在 ServerPlayNetworkHandler，但字段访问不稳定，
+        // 此处仅靠命名+连接特征判断，避免误用不确定字段
 
         return false;
     }
@@ -80,13 +73,14 @@ public class CarpetFakePlayerDetector {
         // 检查是否是通过Carpet创建的
         try {
             // Carpet假人没有真实的网络连接
-            var connection = player.networkHandler;
-            if (connection == null) return true;
+            var handler = player.networkHandler;
+            if (handler == null) return true;
 
-            var netConn = connection.getConnection();
+            // 1.21.1: ServerPlayNetworkHandler#connection
+            var netConn = handler.connection;
             if (netConn == null) return true;
 
-            var channel = netConn.getChannel();
+            var channel = netConn.channel;
             if (channel == null || !channel.isOpen()) return true;
 
         } catch (Exception e) {

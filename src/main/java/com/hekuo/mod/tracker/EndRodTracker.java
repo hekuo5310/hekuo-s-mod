@@ -7,6 +7,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -156,7 +157,7 @@ public class EndRodTracker {
         NbtCompound nbt = new NbtCompound();
         nbt.putInt(SPECIAL_MILK_TAG, 1);
         nbt.putString(MILK_SOURCE_TAG, sourcePlayer.getName().getString());
-        milkBucket.set(DataComponentTypes.CUSTOM_DATA, nbt);
+        milkBucket.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 
         // 设置显示名 - 金色字体 "你真的要喝掉它吗awa？"
         milkBucket.set(DataComponentTypes.CUSTOM_NAME,
@@ -182,7 +183,8 @@ public class EndRodTracker {
      */
     public static boolean isSpecialMilk(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        NbtCompound nbt = stack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtComponent comp = stack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtCompound nbt = comp != null ? comp.getNbt() : null;
         return nbt != null && nbt.contains(SPECIAL_MILK_TAG);
     }
 
@@ -191,7 +193,8 @@ public class EndRodTracker {
      */
     public static String getMilkSourceName(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
-        NbtCompound nbt = stack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtComponent comp = stack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtCompound nbt = comp != null ? comp.getNbt() : null;
         if (nbt != null && nbt.contains(MILK_SOURCE_TAG)) {
             return nbt.getString(MILK_SOURCE_TAG);
         }

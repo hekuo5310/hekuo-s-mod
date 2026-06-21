@@ -7,6 +7,7 @@ import com.hekuo.mod.config.ModConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class ModCommands {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
+                                 CommandRegistryAccess registryAccess,
                                  CommandManager.RegistrationEnvironment environment) {
         // /askai 命令
         dispatcher.register(CommandManager.literal("askai")

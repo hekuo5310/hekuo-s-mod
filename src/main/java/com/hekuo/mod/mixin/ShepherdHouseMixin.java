@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 村庄结构Mixin - 修复牧羊人小屋不生成的bug
  *
- * Minecraft 1.20.1中，牧羊人小屋(shepherd_house)由于结构池配置问题
+ * Minecraft中，牧羊人小屋(shepherd_house)由于结构池配置问题
  * 导致权重为0或缺失，此Mixin修复该问题
  */
 @Mixin(StructurePool.class)
@@ -59,10 +59,12 @@ public class ShepherdHouseMixin {
         if (biome == null) return;
 
         try {
-            Identifier shepherdId = new Identifier("minecraft",
+            // 1.21.1: Identifier.of 取代私有构造器
+            Identifier shepherdId = Identifier.of("minecraft",
                 "village/" + biome + "/houses/" + biome + "_shepherd_house");
+            // 1.21.1: StructurePoolElement.ofSingle + apply(Projection) (原 method_28918)
             StructurePoolElement shepherdElement = StructurePoolElement.ofSingle(shepherdId.toString())
-                    .method_28918(); // setProjection
+                    .apply(StructurePool.Projection.TERRAIN_MATCHING);
             // 添加牧羊人小屋（权重2，与其他小屋一致）
             for (int i = 0; i < 2; i++) {
                 elements.add(shepherdElement);
