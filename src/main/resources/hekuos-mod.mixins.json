@@ -8,13 +8,11 @@
     "AnvilScreenHandlerMixin",
     "BucketItemMixin",
     "IceBlockMixin",
-    "ShepherdHouseMixin",
     "PlayerEntityMixin",
     "MilkBucketItemMixin"
   ],
   "server": [
     "server.MinecraftServerMixin",
-    "server.ServerPlayNetworkHandlerMixin",
     "server.PlayerManagerMixin"
   ],
   "client": [

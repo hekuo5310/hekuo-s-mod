@@ -20,31 +20,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 冰块Mixin - 当下界的水旁边有冰块时，冰块变霜冰，水多存活2400刻
  *
  * 注意：不包括浮冰(Packed Ice)和蓝冰(Blue Ice)
+ *
+ * 1.21.1: IceBlock 已不再 override onBlockAdded（移到 Block 父类），
+ * 此 Mixin 仅在 randomTick 时检查，不再 hook 放置事件。
  */
 @Mixin(IceBlock.class)
 public class IceBlockMixin {
 
     /**
-     * 在冰块被放置或更新时检查是否在下界的水旁边
-     */
-    @Inject(method = "onBlockAdded", at = @At("HEAD"))
-    private void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify, CallbackInfo ci) {
-        if (!ModConfig.get().netherIceToFrostedIceEnabled) return;
-        if (world.isClient()) return;
-
-        // 只在下界生效
-        if (!world.getRegistryKey().equals(World.NETHER)) return;
-
-        // 检查是否是普通冰块（不包括浮冰和蓝冰）
-        Block block = state.getBlock();
-        if (block != Blocks.ICE) return;
-
-        // 检查附近是否有水
-        checkNearbyWaterAndConvert(world, pos);
-    }
-
-    /**
-     * 在冰块随机tick时也进行检查
+     * 在冰块随机tick时检查附近水并转换
      */
     @Inject(method = "randomTick", at = @At("HEAD"))
     private void onRandomTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
@@ -53,7 +37,7 @@ public class IceBlockMixin {
         // 只在下界生效
         if (!world.getRegistryKey().equals(World.NETHER)) return;
 
-        // 检查是否是普通冰块
+        // 检查是否是普通冰块（不包括浮冰和蓝冰）
         Block block = state.getBlock();
         if (block != Blocks.ICE) return;
 
