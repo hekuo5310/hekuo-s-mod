@@ -1,5 +1,7 @@
 package com.hekuo.mod.tracker;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemLore;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
@@ -150,26 +152,22 @@ public class EndRodTracker {
                                           MinecraftServer server) {
         ItemStack milkBucket = new ItemStack(Items.MILK_BUCKET);
 
-        // 设置NBT标签
-        NbtCompound nbt = milkBucket.getOrCreateNbt();
+        // 自定义数据标记 - 存入 CUSTOM_DATA 组件 (1.21 不再使用物品 NBT)
+        NbtCompound nbt = new NbtCompound();
         nbt.putInt(SPECIAL_MILK_TAG, 1);
         nbt.putString(MILK_SOURCE_TAG, sourcePlayer.getName().getString());
+        milkBucket.set(DataComponentTypes.CUSTOM_DATA, nbt);
 
         // 设置显示名 - 金色字体 "你真的要喝掉它吗awa？"
-        NbtCompound display = new NbtCompound();
-        display.putString("Name", Text.Serializer.toJson(
+        milkBucket.set(DataComponentTypes.CUSTOM_NAME,
             Text.literal("你真的要喝掉它吗awa？").formatted(Formatting.GOLD)
-        ));
+        );
 
         // 设置Lore
-        NbtCompound loreNbt = new NbtCompound();
-        net.minecraft.nbt.NbtList loreList = new net.minecraft.nbt.NbtList();
-        loreList.add(net.minecraft.nbt.NbtString.of(Text.Serializer.toJson(
+        milkBucket.set(DataComponentTypes.LORE, new ItemLore(java.util.List.of(
             Text.literal("来自" + sourcePlayer.getName().getString() + "的\"牛奶\"")
                 .formatted(Formatting.LIGHT_PURPLE)
         )));
-        display.put("Lore", loreList);
-        nbt.put("display", display);
 
         // 给予点击者
         clicker.giveItemStack(milkBucket);
@@ -184,7 +182,7 @@ public class EndRodTracker {
      */
     public static boolean isSpecialMilk(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = stack.get(DataComponentTypes.CUSTOM_DATA);
         return nbt != null && nbt.contains(SPECIAL_MILK_TAG);
     }
 
@@ -193,7 +191,7 @@ public class EndRodTracker {
      */
     public static String getMilkSourceName(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = stack.get(DataComponentTypes.CUSTOM_DATA);
         if (nbt != null && nbt.contains(MILK_SOURCE_TAG)) {
             return nbt.getString(MILK_SOURCE_TAG);
         }
