@@ -3,7 +3,8 @@ package com.hekuo.mod.mixin.server;
 import com.hekuo.mod.HekuosMod;
 import com.hekuo.mod.config.ModConfig;
 import com.hekuo.mod.onebot.OneBotBridge;
-import net.minecraft.network.message.ChatMessage;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -25,9 +26,10 @@ public class ServerPlayNetworkHandlerMixin {
 
     /**
      * 拦截玩家聊天消息 - 转发到OneBot
+     * 1.21.1: ServerPlayNetworkHandler#handleMessage(SignedMessage, MessageType.Parameters)
      */
-    @Inject(method = "handleChatMessage", at = @At("HEAD"))
-    private void onChatMessage(ChatMessage message, CallbackInfo ci) {
+    @Inject(method = "handleMessage", at = @At("HEAD"))
+    private void onChatMessage(SignedMessage message, MessageType.Parameters params, CallbackInfo ci) {
         if (!ModConfig.get().oneBotEnabled) return;
         try {
             String chatContent = message.getContent().getString();

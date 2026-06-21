@@ -1,7 +1,7 @@
 package com.hekuo.mod.tracker;
 
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemLore;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
@@ -164,7 +164,7 @@ public class EndRodTracker {
         );
 
         // 设置Lore
-        milkBucket.set(DataComponentTypes.LORE, new ItemLore(java.util.List.of(
+        milkBucket.set(DataComponentTypes.LORE, new LoreComponent(java.util.List.of(
             Text.literal("来自" + sourcePlayer.getName().getString() + "的\"牛奶\"")
                 .formatted(Formatting.LIGHT_PURPLE)
         )));
