@@ -2,7 +2,7 @@ package com.hekuo.mod.mixin;
 
 import com.hekuo.mod.config.ModConfig;
 import com.hekuo.mod.tracker.EndRodTracker;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MilkBucketItem;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,7 +22,7 @@ public class MilkBucketItemMixin {
      * 拦截牛奶桶使用，检测是否是特殊牛奶
      */
     @Inject(method = "finishUsing", at = @At("HEAD"))
-    private void onFinishUsing(ItemStack stack, World world, PlayerEntity user,
+    private void onFinishUsing(ItemStack stack, World world, LivingEntity user,
                                 CallbackInfoReturnable<ItemStack> cir) {
         if (!ModConfig.get().endRodInteractionEnabled) return;
         if (world.isClient()) return;
