@@ -86,6 +86,7 @@ public class ModCommands {
         String content = StringArgumentType.getString(context, "content");
         // 移除可能尾随的 --all
         content = content.replace(" --all", "").trim();
+        final String finalContent = content;
 
         // 生成会话ID
         String conversationId = ConversationManager.getInstance().generateConversationId();
@@ -98,7 +99,7 @@ public class ModCommands {
 
         // 异步调用AI
         AiService aiService = new AiService();
-        aiService.chatAsync(content, conversationId).thenAccept(response -> {
+        aiService.chatAsync(finalContent, conversationId).thenAccept(response -> {
             if (response.hasError()) {
                 player.sendMessage(Text.literal("AI调用失败: " + response.error)
                     .formatted(Formatting.RED), false);
@@ -108,7 +109,7 @@ public class ModCommands {
             if (broadcast) {
                 // 发送到公屏
                 source.getServer().getPlayerManager().broadcast(
-                    Text.literal("[AI] " + player.getName().getString() + " 问: " + content)
+                    Text.literal("[AI] " + player.getName().getString() + " 问: " + finalContent)
                         .formatted(Formatting.GOLD),
                     false
                 );
