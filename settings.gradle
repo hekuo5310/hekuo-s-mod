@@ -2,11 +2,7 @@ pluginManagement {
     repositories {
         maven {
             name = 'Fabric'
-            url = 'https://maven.fabricmc.net/repository/release/'
-        }
-        maven {
-            name = 'FabricSnapshots'
-            url = 'https://maven.fabricmc.net/repository/snapshot/'
+            url = 'https://maven.fabricmc.net/'
         }
         mavenCentral()
         gradlePluginPortal()
