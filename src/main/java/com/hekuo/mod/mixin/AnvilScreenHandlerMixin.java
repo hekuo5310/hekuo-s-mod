@@ -1,5 +1,6 @@
 package com.hekuo.mod.mixin;
 
+import com.hekuo.mod.HekuosMod;
 import com.hekuo.mod.config.ModConfig;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -64,10 +65,15 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
         ItemStack firstSlot = inputInv.getStack(0);
         ItemStack secondSlot = inputInv.getStack(1);
 
+        // 调试：确认 updateResult 被命中
+        HekuosMod.LOGGER.info("[AnvilMixin] updateResult triggered, slot0={}, slot1={}",
+            firstSlot.getItem(), secondSlot.getItem());
+
         // 检查：第一个槽位是水桶，第二个槽位含有火焰保护附魔
         if (firstSlot.getItem() != Items.WATER_BUCKET || secondSlot.isEmpty()) return;
 
         int fireProtectionLevel = getEnchantLevelByKey(secondSlot, Enchantments.FIRE_PROTECTION);
+        HekuosMod.LOGGER.info("[AnvilMixin] water bucket + non-empty slot1, fireProt level={}", fireProtectionLevel);
         if (fireProtectionLevel <= 0 || fireProtectionLevel > 4) return;
 
         // 从 secondSlot 取该附魔的 RegistryEntry
