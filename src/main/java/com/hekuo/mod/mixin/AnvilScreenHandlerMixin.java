@@ -30,14 +30,24 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
     }
 
     /**
-     * 通过遍历附魔组件按 RegistryKey 匹配，避开 dynamic registry 解析
+     * 通过遍历附魔组件按 RegistryKey 匹配，避开 dynamic registry 解析。
+     * 附魔书的附魔存在 STORED_ENCHANTMENTS，普通附魔物品在 ENCHANTMENTS。
      */
     private static int getEnchantLevelByKey(ItemStack stack,
                                               net.minecraft.registry.RegistryKey<Enchantment> key) {
-        ItemEnchantmentsComponent comp = stack.get(DataComponentTypes.ENCHANTMENTS);
-        if (comp == null) return 0;
-        for (RegistryEntry<Enchantment> entry : comp.getEnchantments()) {
-            if (entry.matchesKey(key)) return comp.getLevel(entry);
+        // 附魔书用 STORED_ENCHANTMENTS
+        ItemEnchantmentsComponent stored = stack.get(DataComponentTypes.STORED_ENCHANTMENTS);
+        if (stored != null) {
+            for (RegistryEntry<Enchantment> entry : stored.getEnchantments()) {
+                if (entry.matchesKey(key)) return stored.getLevel(entry);
+            }
+        }
+        // 普通附魔物品用 ENCHANTMENTS
+        ItemEnchantmentsComponent active = stack.get(DataComponentTypes.ENCHANTMENTS);
+        if (active != null) {
+            for (RegistryEntry<Enchantment> entry : active.getEnchantments()) {
+                if (entry.matchesKey(key)) return active.getLevel(entry);
+            }
         }
         return 0;
     }
@@ -60,11 +70,12 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
         int fireProtectionLevel = getEnchantLevelByKey(secondSlot, Enchantments.FIRE_PROTECTION);
         if (fireProtectionLevel <= 0 || fireProtectionLevel > 4) return;
 
-        // 从 secondSlot 取该附魔的 RegistryEntry（已存在于该附魔书中）
-        ItemEnchantmentsComponent secondComp = secondSlot.get(DataComponentTypes.ENCHANTMENTS);
-        if (secondComp == null) return;
+        // 从 secondSlot 取该附魔的 RegistryEntry
+        ItemEnchantmentsComponent sourceComp = secondSlot.get(DataComponentTypes.STORED_ENCHANTMENTS);
+        if (sourceComp == null) sourceComp = secondSlot.get(DataComponentTypes.ENCHANTMENTS);
+        if (sourceComp == null) return;
         RegistryEntry<Enchantment> fireProtEntry = null;
-        for (RegistryEntry<Enchantment> entry : secondComp.getEnchantments()) {
+        for (RegistryEntry<Enchantment> entry : sourceComp.getEnchantments()) {
             if (entry.matchesKey(Enchantments.FIRE_PROTECTION)) {
                 fireProtEntry = entry;
                 break;
@@ -80,7 +91,8 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
         enchBuilder.add(fireProtEntry, fireProtectionLevel);
         result.set(DataComponentTypes.ENCHANTMENTS, enchBuilder.build());
 
-        // 设置输出槽位
+        // 设置输出槽位并取消原版逻辑，避免被覆盖
         this.output.setStack(0, result);
+        ci.cancel();
     }
 }
