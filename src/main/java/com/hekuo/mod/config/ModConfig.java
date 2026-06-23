@@ -47,6 +47,10 @@ public class ModConfig {
     public boolean webStatusEnabled = false;
     public WebStatusConfig webStatusConfig = new WebStatusConfig();
 
+    // 功能8: UDP mod 分发（双端 - 服务端发/客户端收，automodpack 同款但用可靠 UDP）
+    public boolean udpDistributionEnabled = false;
+    public UdpDistributionConfig udpDistributionConfig = new UdpDistributionConfig();
+
     // ==================== 配置子类 ====================
 
     public static class AiProviderConfig {
@@ -75,6 +79,15 @@ public class ModConfig {
         // 自动搜索顺序：hekuos-mod-web/hekuos-mod-web → config/hekuos-mod/hekuos-mod-web
         // 若找不到二进制，会fallback到搜索系统中的python3
         public String binaryPath = "";
+    }
+
+    public static class UdpDistributionConfig {
+        public int port = 25566;           // 独立 UDP 端口
+        public int chunkSize = 1024;       // 每块数据大小（字节）
+        public int ackTimeoutMs = 500;     // ACK 超时（毫秒）
+        public int maxRetries = 10;        // 单块最大重试次数
+        public String serverHost = "";     // 客户端用：服务端 UDP 地址，空=用当前连接的服务器 IP
+        public int maxFileSizeMb = 200;    // 单文件大小上限（MB），防恶意大文件
     }
 
     // ==================== 序列化/反序列化 ====================

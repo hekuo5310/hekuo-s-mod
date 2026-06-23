@@ -1,8 +1,9 @@
 package com.hekuo.mod;
 
 import com.hekuo.mod.config.ModConfig;
+import com.hekuo.mod.distribution.UdpDistributionClient;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +19,17 @@ public class HekuosModClient implements ClientModInitializer {
     public void onInitializeClient() {
         CLIENT_LOGGER.info("Hekuo's Mod 客户端初始化...");
 
-        // 客户端特有的功能（如特殊渲染）可在此注册
-        // 大部分游戏逻辑在服务端处理
+        // 进服后自动触发 UDP mod 同步（若开启）
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            ModConfig config = ModConfig.get();
+            if (config.udpDistributionEnabled) {
+                ModConfig.UdpDistributionConfig udp = config.udpDistributionConfig;
+                UdpDistributionClient.getInstance().startSync(
+                    udp.serverHost, udp.port, udp.chunkSize,
+                    udp.ackTimeoutMs, udp.maxRetries, udp.maxFileSizeMb
+                );
+            }
+        });
 
         CLIENT_LOGGER.info("Hekuo's Mod 客户端初始化完成");
     }

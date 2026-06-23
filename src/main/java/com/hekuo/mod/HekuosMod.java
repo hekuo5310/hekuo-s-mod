@@ -3,6 +3,7 @@ package com.hekuo.mod;
 import com.hekuo.mod.ai.ConversationManager;
 import com.hekuo.mod.command.ModCommands;
 import com.hekuo.mod.config.ModConfig;
+import com.hekuo.mod.distribution.UdpDistributionManager;
 import com.hekuo.mod.onebot.OneBotBridge;
 import com.hekuo.mod.tracker.EndRodTracker;
 import com.hekuo.mod.tracker.WaterEvaporationTracker;
@@ -51,6 +52,13 @@ public class HekuosMod implements ModInitializer {
                 StatusServerManager.getInstance().start(server, config.webStatusConfig);
             }
 
+            // 启动 UDP mod 分发服务（仅服务端发送端）
+            if (config.udpDistributionEnabled) {
+                ModConfig.UdpDistributionConfig udp = config.udpDistributionConfig;
+                UdpDistributionManager.getInstance().start(
+                    udp.port, udp.chunkSize, udp.ackTimeoutMs, udp.maxRetries, udp.maxFileSizeMb);
+            }
+
             LOGGER.info("Hekuo's Mod 服务器端已启动");
         });
 
@@ -58,6 +66,7 @@ public class HekuosMod implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             OneBotBridge.getInstance().disconnect();
             StatusServerManager.getInstance().stop();
+            UdpDistributionManager.getInstance().stop();
             ConversationManager.getInstance().saveConversations();
             LOGGER.info("Hekuo's Mod 已停止");
         });
