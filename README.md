@@ -4,9 +4,10 @@
 
 ## 版本兼容
 
-- **主要支持**: Minecraft 1.20.1 + Fabric Loader 0.14.22+
-- **Fabric API**: 0.87.2+1.20.1
-- **Java**: 17+
+- **主要支持**: Minecraft 1.21.1 + Fabric Loader 0.16.9+
+- **Fabric API**: 0.116.12+1.21.1
+- **Java**: 21+
+- **Loom**: 1.7.4 / **Gradle**: 8.8
 
 ## 安装方式
 
@@ -19,7 +20,7 @@
 ### 客户端安装（可选）
 1. 安装 Fabric Loader 和 Fabric API
 2. 将模组 JAR 文件放入客户端的 `mods` 目录
-3. 客户端安装后可使用双端功能（下界放水、牧羊人小屋修复、冰变霜冰、AI对话、末地烛交互）
+3. 客户端安装后可使用双端功能（下界放水、牧羊人小屋修复、冰变霜冰、AI对话、末地烛交互、UDP mod 自动同步）
 
 ### 兼容性说明
 
@@ -216,6 +217,60 @@
 
 **访问地址**: `http://服务器IP:8080`
 
+### 8. UDP Mod 自动同步（双端，automodpack 同款）
+
+客户端进服后自动同步服务端 `mods` 目录的 mod jar 文件到客户端 `mods/hekuos-mod-sync/` 子目录。与 automodpack 不同，使用 **可靠 UDP 协议** 传输。
+
+**可靠性**: UDP 本身不可靠，本功能在 UDP 上实现**停等协议(stop-and-wait)**——发一块等 ACK，超时重传，收到 ACK 再发下一块，确保文件完整送达。
+
+**工作流程**:
+1. 客户端进服自动向服务端 UDP 端口请求 mod 清单（文件名/大小/SHA-256）
+2. 对比本地 `mods/hekuos-mod-sync/` 已有文件，算出缺失/过期文件
+3. 逐个用停等协议分块接收，写入 `.part` 临时文件
+4. SHA-256 校验通过后改名落地
+5. 全部完成后聊天提示 `[Mod同步] 已下载 N/M 个 mod, 请重启游戏生效`
+6. **重启客户端**即可加载同步的 mod
+
+**协议**: 二进制 UDP 包，首字节类型码（LIST_REQUEST/RESPONSE、FILE_REQUEST、CHUNK、ACK、COMPLETE、DONE、ERROR）。块大小默认 1024 字节。
+
+**安全**:
+- 文件名白名单 `[A-Za-z0-9._-]`，拒绝 `/`、`\`、`..` 防路径穿越
+- 单文件大小上限（默认 200MB），防恶意大文件
+- 临时文件 `.part` + SHA-256 校验，中断不留损坏文件
+- 所有网络 IO 独立线程，不阻塞游戏主线程
+
+**配置项**:
+
+```json
+{
+  "udpDistributionEnabled": false,
+  "udpDistributionConfig": {
+    "port": 25566,
+    "chunkSize": 1024,
+    "ackTimeoutMs": 500,
+    "maxRetries": 10,
+    "serverHost": "",
+    "maxFileSizeMb": 200
+  }
+}
+```
+
+| 配置项 | 默认 | 说明 |
+|:---|:---:|:---|
+| `port` | 25566 | 独立 UDP 端口，**需在服务端防火墙开放 UDP** |
+| `chunkSize` | 1024 | 每块数据大小（字节） |
+| `ackTimeoutMs` | 500 | ACK 超时（毫秒） |
+| `maxRetries` | 10 | 单块最大重试次数 |
+| `serverHost` | "" | 客户端用：服务端 UDP 地址，空=自动取当前连接的服务器 IP |
+| `maxFileSizeMb` | 200 | 单文件大小上限（MB） |
+
+**部署提示**:
+- 服务端需开放配置端口（如 25566）的 **UDP** 协议
+- 客户端 `serverHost` 留空即可自动用连接的服务器地址；也可手动指定
+- 协议无鉴权，**公网部署有被扫描拉取文件风险**，建议仅内网/信任环境使用
+- 同步目录 `mods/hekuos-mod-sync/` 与主 `mods/` 分离，不覆盖玩家已有 mod
+- 本 mod 自身已在客户端运行，同步时 SHA-256 相同会自动跳过，不会重复下载
+
 ---
 
 ## 配置文件
@@ -259,6 +314,15 @@
     "port": 8080,
     "refreshInterval": 5,
     "binaryPath": ""
+  },
+  "udpDistributionEnabled": false,
+  "udpDistributionConfig": {
+    "port": 25566,
+    "chunkSize": 1024,
+    "ackTimeoutMs": 500,
+    "maxRetries": 10,
+    "serverHost": "",
+    "maxFileSizeMb": 200
   }
 }
 ```
@@ -277,7 +341,7 @@
 ## 编译
 
 ### 环境要求
-- JDK 17
+- JDK 21
 - Python 3.14+（仅编译前端时需要）
 - Nuitka（仅编译前端时需要）
 
@@ -305,12 +369,12 @@
 项目已配置GitHub Actions（`.github/workflows/build.yml`），推送tag时自动构建并发布：
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.0.1
+git push origin v1.0.1
 ```
 
 Release中会包含：
-- `hekuos-mod-1.0.0.jar` - 模组JAR
+- `hekuos-mod-1.0.1.jar` - 模组JAR
 - `hekuos-mod-web` - Linux x86_64 前端二进制
 - `hekuos-mod-web.exe` - Windows x64 前端二进制
 - `hekuos-mod-web` - macOS ARM64 前端二进制
@@ -353,6 +417,12 @@ hekuos-mod/
 │   ├── web/
 │   │   ├── StatusServerManager.java # 状态网页管理（仅服务端）
 │   │   └── SimpleStatusServer.java  # 内嵌HTTP API（仅服务端）
+│   ├── distribution/                # UDP mod 自动同步（双端）
+│   │   ├── DistributionProtocol.java  # 协议常量+包编解码
+│   │   ├── FileManifest.java          # mod 清单数据类
+│   │   ├── UdpDistributionManager.java # 服务端单例+生命周期
+│   │   ├── UdpDistributionServer.java  # 服务端停等发送引擎
+│   │   └── UdpDistributionClient.java  # 客户端进服同步
 │   ├── tracker/
 │   │   ├── WaterEvaporationTracker.java  # 水蒸发追踪（双端）
 │   │   └── EndRodTracker.java            # 末地烛追踪（双端）
@@ -372,12 +442,14 @@ hekuos-mod/
 
 | 依赖 | 版本 | 用途 |
 |:---|:---:|:---|
-| Fabric Loader | 0.14.22+ | 模组加载器 |
-| Fabric API | 0.87.2+ | Fabric API |
+| Fabric Loader | 0.16.9+ | 模组加载器 |
+| Fabric API | 0.116.12+1.21.1 | Fabric API |
 | OkHttp | 4.12.0 | AI API HTTP请求 |
 | Java-WebSocket | 1.5.4 | OneBot WebSocket连接 |
 | Gson | 2.10.1 | JSON处理 |
 | Nuitka | latest | 前端服务器编译（仅构建时） |
+
+> UDP mod 同步功能使用 JDK 自带 `java.net.DatagramSocket`，无需额外依赖。
 
 ---
 
